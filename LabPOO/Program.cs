@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.IO;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace LabPOO
 {
@@ -11,12 +13,44 @@ namespace LabPOO
     {
         public static List<Product> cart;
         public static List<Product> market;
+        public static List<string> necesitamos;
 
         static void Main(string[] args)
         {
             cart = new List<Product>();
             market = new List<Product>();
+            necesitamos = new List<string>();
             SupplyStore();
+
+            BinaryFormatter binary = new BinaryFormatter();
+            Stream stream2 = new FileStream("miCarro.bin", FileMode.Open, FileAccess.Read);
+            if (stream2.Length != 0)
+            {
+                List<Product> cart2 = (List<Product>)binary.Deserialize(stream2);
+                stream2.Close();
+                foreach (Product p in cart2)
+                    p.Agregar(cart);
+            }
+            necesitamos.Add("Queso Rallado Parmesano");
+            necesitamos.Add("Láminas de Lasaña");
+            necesitamos.Add("Mantequilla");
+            necesitamos.Add("Carne Molida");
+            necesitamos.Add("Vino Sauvignon Blanc Reserva Botella");
+            necesitamos.Add("Tomates Pelados en lata");
+            necesitamos.Add("Vino Blanco Caja");
+            necesitamos.Add("Bolsa de Zanahorias");
+            necesitamos.Add("Aceite de Oliva");
+            necesitamos.Add("Sal Lobos");
+            necesitamos.Add("Pimienta");
+            necesitamos.Add("Harina");
+            necesitamos.Add("Malla de Cebollas");
+            necesitamos.Add("Leche Entera");
+
+
+
+
+
+
             while (true)
             {
                 PrintHeader();
@@ -51,6 +85,10 @@ namespace LabPOO
                     }
                     else if (answer == "5")
                     {
+                        Stream stream1 = new FileStream("miCarro.bin", FileMode.Create, FileAccess.Write);
+                        BinaryFormatter bin = new BinaryFormatter();
+                        bin.Serialize(stream1, cart);
+                        stream1.Close();
                         Environment.Exit(1);
                     }
                 }
@@ -92,14 +130,28 @@ namespace LabPOO
                     {
                         continue;
                     }
-                    AddToCart(market[answer]);
+                    
+                    int a = 1;
+                    foreach (string s in necesitamos)
+                    {
+                        if (market[answer].Name == s)
+                        {
+                            AddToCart(market[answer]);
+                            a = a - 1;
+                        }
+                    }
+                    if (a == 1)
+                    {
+                        Console.WriteLine("No puedes meter eso dentro del carro fanfarron!");
+                    }
+
                     break;
                 }
                 catch
                 {
                     continue;
                 }
-            }           
+            }
         }
 
         public static void PrintCart()
@@ -191,5 +243,31 @@ namespace LabPOO
                 response = Console.ReadKey(true);
             }
         }
+
+        public delegate void MyDelegate(List<Product> market, int answer, List<string> necesitamos);
+        
+        public void Hermana(List<Product> market, int answer, List<string> necesitamos)
+        {
+            int a = 1;
+            foreach (string s in necesitamos)
+            {
+                if (market[answer].Name == s)
+                {
+                    AddToCart(market[answer]);
+                    a = a - 1;
+                }
+            }
+            if (a == 1)
+            {
+                Console.WriteLine("No puedes meter eso dentro del carro fanfarron!");
+            }
+        }
+        public event MyDelegate  HermanaPesada;
+        
+
+    
+        
+        
+
     }
 }
